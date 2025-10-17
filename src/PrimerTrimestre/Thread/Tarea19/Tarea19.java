@@ -22,7 +22,6 @@ public class Tarea19 extends Thread {
             }
         }
 
-        // Sincronizar solo una vez
         synchronized(lock) {
             totalVocales += contadorLocal;
         }
@@ -44,12 +43,10 @@ public class Tarea19 extends Thread {
                 new Tarea19('u', texto)
         };
 
-        // Iniciar todos los hilos
         for (Tarea19 hilo : hilos) {
             hilo.start();
         }
 
-        // Esperar a que todos terminen
         try {
             for (Tarea19 hilo : hilos) {
                 hilo.join();
