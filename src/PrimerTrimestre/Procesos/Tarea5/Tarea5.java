@@ -1,4 +1,4 @@
-package PrimerTrimestre.Tarea5;
+package PrimerTrimestre.Procesos.Tarea5;
 
 import java.io.IOException;
 import java.util.Scanner;

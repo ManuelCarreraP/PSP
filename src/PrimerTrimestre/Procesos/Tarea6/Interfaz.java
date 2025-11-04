@@ -1,4 +1,4 @@
-package PrimerTrimestre.Tarea6;
+package PrimerTrimestre.Procesos.Tarea6;
 
 import java.util.Scanner;
 

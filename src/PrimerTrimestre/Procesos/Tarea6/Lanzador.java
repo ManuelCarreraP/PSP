@@ -1,9 +1,8 @@
-package PrimerTrimestre.Tarea6;
+package PrimerTrimestre.Procesos.Tarea6;
 
 import java.io.IOException;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class Lanzador {

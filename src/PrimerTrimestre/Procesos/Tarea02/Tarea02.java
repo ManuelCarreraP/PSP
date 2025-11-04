@@ -1,4 +1,4 @@
-package PrimerTrimestre.Tarea02;
+package PrimerTrimestre.Procesos.Tarea02;
 
 public class Tarea02 {
     public static void main(String[] args) {
