@@ -1,0 +1,5 @@
+Este codigo siempre ejecutará la misma salida:
+Hilo Alta Prioridad está ejecutándose
+Hilo Baja Prioridad está ejecutándose
+
+Esto se debe ya que al asignarle la máxima prioridad (Prioridad: 10) al hiloAltaPrioridad siempre se ejecutará antes que el hiloBajaPrioridad(Prioridad: 1) porque tiene mucha más prioridad.
