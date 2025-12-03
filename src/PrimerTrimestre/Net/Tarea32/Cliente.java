@@ -1,57 +1,59 @@
 package PrimerTrimestre.Net.Tarea32;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.InetSocketAddress;
-import java.net.Socket;
+import java.io.IOException;
+import java.net.*;
+import java.util.Scanner;
 
 public class Cliente {
+
     public static void main(String[] args) {
-        InetSocketAddress dir = new InetSocketAddress("localhost", 6666);
+        int puertoServidor = 6666;
+        Scanner scanner = new Scanner(System.in);
 
         try {
-            Socket socket = new Socket();
-            socket.connect(dir);
+            InetAddress direccionServidor = InetAddress.getByName("localhost");
+            DatagramSocket datagramSocket = new DatagramSocket();
 
-            System.out.println("Conectado al servidor");
+            System.out.println("Cliente iniciado.");
+            System.out.println("Escribe palabras separadas por comas ',' (o 'fin' para terminar):");
 
-            PrintWriter escritor = new PrintWriter(socket.getOutputStream(), true);
-            BufferedReader lector = new BufferedReader(
-                    new InputStreamReader(socket.getInputStream())
-            );
-            BufferedReader teclado = new BufferedReader(
-                    new InputStreamReader(System.in)
-            );
-
-            System.out.println("Introduce una lista de palabras (o 'adios' para terminar):");
-
-            String mensajeUsuario;
             while (true) {
-                System.out.print("Cliente: ");
-                mensajeUsuario = teclado.readLine();
+                System.out.print("Ingresa palabras: ");
+                String entrada = scanner.nextLine();
 
-                escritor.println(mensajeUsuario);
+                byte[] bufferEnvio = entrada.getBytes();
+                DatagramPacket pregunta = new DatagramPacket(
+                        bufferEnvio,
+                        bufferEnvio.length,
+                        direccionServidor,
+                        puertoServidor
+                );
+                datagramSocket.send(pregunta);
+                System.out.println("Enviado al servidor: " + entrada);
 
-                if (mensajeUsuario.equalsIgnoreCase("adios")) {
-                    System.out.println("Finalizando conexión...");
+                if (entrada.equalsIgnoreCase("fin")) {
                     break;
                 }
 
-                String respuestaServidor = lector.readLine();
-                if (respuestaServidor != null) {
-                    System.out.println("Servidor: " + respuestaServidor);
-                } else {
-                    System.out.println("Servidor cerró la conexión");
-                    break;
-                }
+                byte[] bufferRecepcion = new byte[1024];
+                DatagramPacket respuesta = new DatagramPacket(bufferRecepcion, bufferRecepcion.length);
+                datagramSocket.receive(respuesta);
+
+                String respuestaServidor = new String(respuesta.getData(), 0, respuesta.getLength());
+                System.out.println("Servidor responde: " + respuestaServidor);
+                System.out.println("---");
             }
 
-            System.out.println("Conexión finalizada");
-            socket.close();
+            datagramSocket.close();
+            scanner.close();
+            System.out.println("Cliente cerrado");
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (SocketException ex) {
+            ex.printStackTrace();
+        } catch (UnknownHostException ex) {
+            ex.printStackTrace();
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
     }
 }

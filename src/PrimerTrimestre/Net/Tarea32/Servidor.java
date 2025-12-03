@@ -1,61 +1,84 @@
 package PrimerTrimestre.Net.Tarea32;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.io.IOException;
+import java.net.*;
 
 public class Servidor {
+
     public static void main(String[] args) {
+        int puerto = 6666;
+
         try {
-            InetSocketAddress dir = new InetSocketAddress("localhost", 6666);
+            System.out.println("Servidor arrancando en puerto " + puerto + " - Esperando palabras del cliente...");
 
-            ServerSocket servidor = new ServerSocket();
-            servidor.bind(dir);
+            DatagramSocket datagramSocket = new DatagramSocket(puerto);
 
-            System.out.println("Esperando conexión....");
-            Socket socket = servidor.accept();
-            System.out.println("Cliente conectado");
+            while (true) {
+                byte[] bufferRecepcion = new byte[1024];
+                DatagramPacket peticion = new DatagramPacket(bufferRecepcion, bufferRecepcion.length);
+                datagramSocket.receive(peticion);
 
-            BufferedReader lector = new BufferedReader(
-                    new InputStreamReader(socket.getInputStream())
-            );
-            PrintWriter escritor = new PrintWriter(socket.getOutputStream(), true);
+                InetAddress direccionCliente = peticion.getAddress();
+                int puertoCliente = peticion.getPort();
 
-            String mensajeCliente;
-            while ((mensajeCliente = lector.readLine()) != null) {
+                String mensajeCliente = new String(peticion.getData(), 0, peticion.getLength());
+                System.out.println("Cliente envió: " + mensajeCliente);
 
-                System.out.println("Lista recibida: " + mensajeCliente);
+                if (mensajeCliente.equalsIgnoreCase("fin")) {
+                    System.out.println("Cliente solicitó terminar la conexión");
 
-                if (mensajeCliente.equalsIgnoreCase("adios")) {
-                    System.out.println("Cerrando conexión...");
+
+                    String respuestaFin = "Conexión terminada";
+                    byte[] bufferEnvioFin = respuestaFin.getBytes();
+                    DatagramPacket respuestaPacket = new DatagramPacket(
+                            bufferEnvioFin,
+                            bufferEnvioFin.length,
+                            direccionCliente,
+                            puertoCliente
+                    );
+                    datagramSocket.send(respuestaPacket);
                     break;
                 }
 
-                String[] palabras = mensajeCliente.split("[ ,/]+");
+                String[] palabras = mensajeCliente.split(",");
 
-                String masLarga = "";
-                for (String p : palabras) {
-                    if (p.length() > masLarga.length()) {
-                        masLarga = p;
-                    }
-                }
+                String palabraMasLarga = encontrarPalabraMasLarga(palabras);
+                int longitud = palabraMasLarga.length();
 
-                String respuesta = "Palabra más larga: " + masLarga + " (longitud: " + masLarga.length() + ")";
+                String respuesta = "Palabra más larga: '" + palabraMasLarga + "' - Longitud: " + longitud;
+                byte[] bufferEnvio = respuesta.getBytes();
 
-                escritor.println(respuesta);
-
-                System.out.println("Servidor responde: " + respuesta);
+                DatagramPacket respuestaPacket = new DatagramPacket(
+                        bufferEnvio,
+                        bufferEnvio.length,
+                        direccionCliente,
+                        puertoCliente
+                );
+                datagramSocket.send(respuestaPacket);
+                System.out.println("Servidor respondió: " + respuesta);
             }
 
-            System.out.println("Conexión finalizada");
-            socket.close();
-            servidor.close();
+            datagramSocket.close();
+            System.out.println("Servidor cerrado");
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (SocketException ex) {
+            ex.printStackTrace();
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
+    }
+
+    private static String encontrarPalabraMasLarga(String[] palabras) {
+        if (palabras == null || palabras.length == 0) {
+            return "";
+        }
+
+        String palabraMasLarga = palabras[0].trim();
+        for (String palabra : palabras) {
+            if (palabra.trim().length() > palabraMasLarga.length()) {
+                palabraMasLarga = palabra.trim();
+            }
+        }
+        return palabraMasLarga;
     }
 }
